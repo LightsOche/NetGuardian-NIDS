@@ -1,3 +1,8 @@
+
+## 🚀 Live Demo
+
+Try the NetGuardian NIDS app here:  
+👉 [Click to Launch App](https://netguardian-nids-vqvepvbcuja5og8dvaxd94.streamlit.app/)
 # 🛡️ NetGuardian NIDS
 
 **NetGuardian** is a simple Network Intrusion Detection System (NIDS) built with Python, Scapy, and Streamlit. It allows users to upload `.pcap` files and scans them for suspicious activity such as:
