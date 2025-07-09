@@ -1,52 +1,47 @@
 import streamlit as st
 import pandas as pd
+from PIL import Image
 from nids_engine import detect_intrusions
 
-st.set_page_config(
-    page_title="NetGuardian - NIDS",
-    page_icon="🛡️",
-    layout="wide"
-)
+# Page configuration
+st.set_page_config(page_title="NetGuardian NIDS", page_icon="🛡️", layout="wide")
 
-# Sidebar
-with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Network-icon.svg/2048px-Network-icon.svg.png", width=100)
-    st.title("🛡️ NetGuardian")
-    st.markdown("**Developer:** Lights Oche")
-    st.markdown("**Project:** 3MTT July Knowledge Showcase")
-    st.markdown("📧 lightsoche@gmail.com")
-    st.markdown("[🌐 GitHub](https://github.com/LightsOche/NetGuardian-NIDS)")
+# Load and display logo
+logo_path = "assets/netguardian_logo.png"  # Make sure the logo is in this path
+try:
+    logo = Image.open(logo_path)
+    st.image(logo, width=100)
+except FileNotFoundError:
+    st.warning("Logo not found. Make sure it exists in the 'assets' folder.")
 
-# Main Interface
-st.title("🛡️ NetGuardian - Network Intrusion Detection System (NIDS)")
-st.markdown("👨‍💻 Developed by **Lights Oche**")
-st.markdown("Upload a `.pcap` file to scan for network threats in real time using a simple and intuitive dashboard.")
+# Title and developer credit
+st.markdown("<h1 style='color:#0E76A8;'>🛡️ NetGuardian - Network Intrusion Detection System (NIDS)</h1>", unsafe_allow_html=True)
+st.markdown("👨‍💻 <b>Developed by Lights Oche</b>", unsafe_allow_html=True)
+st.write("Upload a PCAP file and detect suspicious network activities in real time.")
 
-uploaded_file = st.file_uploader("📁 Upload a PCAP file", type="pcap")
+# Upload section
+st.subheader("📁 Upload a PCAP file")
+uploaded_file = st.file_uploader("Choose a .pcap file", type=["pcap"], help="Upload a packet capture file (max 200MB)")
 
-if uploaded_file:
+if uploaded_file is not None:
     st.success(f"✅ Uploaded {uploaded_file.name}")
     
-    with st.spinner("Analyzing PCAP file for threats..."):
-        alerts_df = detect_intrusions(uploaded_file)
+    # Process and analyze the PCAP file
+    with st.spinner("Analyzing network traffic..."):
+        alerts, summary = detect_intrusions(uploaded_file)
 
-    if not alerts_df.empty:
-        st.warning("⚠️ **Threats Detected!**")
-        st.dataframe(alerts_df, use_container_width=True)
-
-        # Allow report download
-        csv = alerts_df.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            label="📥 Download Threat Report (CSV)",
-            data=csv,
-            file_name="threat_report.csv",
-            mime="text/csv"
-        )
+    # Display Threat Summary
+    if summary:
+        st.subheader("⚠️ Threats Detected:")
+        st.dataframe(pd.DataFrame(summary), use_container_width=True)
+    
+    # Display individual alerts
+    if alerts:
+        st.subheader("📊 Detailed Alert Logs:")
+        st.code("\n".join(alerts), language="text")
     else:
-        st.success("✅ No threats detected in the PCAP file.")
+        st.success("🎉 No threats detected in the uploaded PCAP!")
 
-else:
-    st.info("Please upload a `.pcap` file to begin.")
-
+# Footer
 st.markdown("---")
-st.caption("🔧 Built with ❤️ by **Lights Oche** for the 3MTT July Knowledge Showcase")
+st.markdown("<center><small>🔧 Built with ❤️ by <b>Lights Oche</b> for the 3MTT July Knowledge Showcase</small></center>", unsafe_allow_html=True)
